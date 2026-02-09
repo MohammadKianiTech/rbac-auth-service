@@ -1,0 +1,53 @@
+services:
+  evalify-db:
+    container_name: Evalify.Db
+    environment:
+      - POSTGRES_DB=evalify
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGDATA=/var/lib/postgresql/18/docker
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_evalify:/var/lib/postgresql/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d evalify" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  evalify.api:
+    container_name: Evalify.Api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=5000
+      # - ASPNETCORE_HTTPS_PORTS=5001
+      - ConnectionStrings__Database=Host=evalify-db;Port=5432;Database=evalify;Username=postgres;Password=postgres;
+    depends_on:
+      evalify-db:
+        condition: service_healthy
+
+    ports:
+      - 5000:5000
+      # - 5001:5001
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+  evalify-seq:
+    container_name: Evalify.Seq
+    restart: unless-stopped
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_PASSWORD=Admin123!
+    ports:
+      - 5341:5341
+      - 8081:80
+    depends_on:
+      - evalify.api
+    volumes:
+      - seq_data_evalify:/data/
+  evalify-redis:
+    container_name: Evalify.Redis
+    restart: always
+    ports:
+      - '6379:6379'

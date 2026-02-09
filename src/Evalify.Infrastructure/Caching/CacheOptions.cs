@@ -1,0 +1,20 @@
+using Microsoft.Extensions.Caching.Distributed;
+
+namespace Evalify.Infrastructure.Caching;
+
+public static class CacheOptions
+{
+    public static DistributedCacheEntryOptions DefaultExpiration => new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1)
+    };
+
+    public static DistributedCacheEntryOptions Create(TimeSpan? expiration)
+    {
+        if (expiration is null)
+        {
+            return new DistributedCacheEntryOptions();
+        }
+        return new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = expiration };
+    }
+}

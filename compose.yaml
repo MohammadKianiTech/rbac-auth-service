@@ -1,0 +1,16 @@
+services:
+  evalify-db:
+    image: postgres:18
+  evalify-redis:
+    image: redis:8.2
+  evalify.api:
+    image: ${DOCKER_REGISTRY-}evalifyapi
+    build:
+      context: .
+      dockerfile: src/Evalify.Api/Dockerfile
+  evalify-seq:
+    image: datalust/seq:latest
+
+volumes:
+  postgres_evalify:
+  seq_data_evalify:
